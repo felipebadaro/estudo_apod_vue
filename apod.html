@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+	<title>APOD</title>
+
+	<style></style>
+</head>
+<body>
+	<div id="app">	
+		<div class="container py-2">
+			<h2>Busca de imagem do dia no APOD</h2>
+			<form action="">
+				<div class="form-group row">
+					<div class="col-6">	
+						<label>Data</label>
+						<input type="text" name="data" class="form-control" v-model:dataExibicao="dataExibicao">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<button v-on:click="buscaImgPorData" class="btn btn-primary">Buscar</button>
+				</div>
+			</form>
+
+			<img :src="imgSrc" :title="imgTitulo">
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="chave.js"></script>
+
+
+	<script>
+		var urlAPI = 'https://api.nasa.gov/planetary/apod?api_key=' + chaveApi + '&date=';
+
+
+		var app = new Vue({
+			el: '#app',
+			data: {
+				imgTitulo: '',
+				imgSrc: '',
+				dataExibicao: '',
+				dataFormatada: ''
+			},
+			methods: {
+				carregaImg: function(){
+					axios.get(urlAPI+this.dataFormatada)
+					.then(function(resposta){
+						app.imgSrc = resposta.data.url;
+						app.imgTitle = resposta.data.title;
+					});
+				},
+
+				buscaImgPorData: function(e){
+					e.preventDefault();
+					this.dataFormatada = this.formatarDataNasa(this.dataExibicao);
+
+					axios.get(urlAPI+this.dataFormatada)
+					.then(function(resposta){
+						app.imgSrc = resposta.data.url;
+						app.imgTitle = resposta.data.title;
+					});
+				},
+
+				hoje: function(){
+					var today = new Date();
+					var dd = String(today.getDate()).padStart(2, '0');
+					var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+					var yyyy = today.getFullYear();
+
+					this.dataExibicao = dd + '/' + mm + '/' + yyyy;
+					this.dataFormatada = yyyy + '-' + mm + '-' + dd;
+				},
+
+				formatarDataNasa: function(data){
+					return data.split("/").reverse().join('-');
+				}
+			},
+			created: function(){
+				this.hoje();
+				this.carregaImg();
+			}
+		});
+	</script>
+</body>
+</html>
