@@ -15,7 +15,7 @@
 <body>
 	<div id="app">	
 		<div class="container py-2">
-			<h2>Busca de imagem do dia no APOD</h2>
+			<h2>Busca de imagem/vídeo do dia no APOD</h2>
 			<form action="">
 				<div class="form-group row">
 					<div class="col-6">	
@@ -29,50 +29,63 @@
 				</div>
 			</form>
 
-			<img :src="imgSrc" :title="imgTitulo">
+
+			<img :src="imgSrc" :title="imgTitulo" v-if="ehImg">
+			
+			<div class="embed-responsive embed-responsive-16by9" v-else>
+				<iframe width="420" height="315"
+				:src="imgSrc">
+			</iframe>
 		</div>
 	</div>
+</div>
 
-	<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-	<script src="chave.js"></script>
-
-
-	<script>
-		var urlAPI = 'https://api.nasa.gov/planetary/apod?api_key=' + chaveApi + '&date=';
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="chave.js"></script>
 
 
-		var app = new Vue({
-			el: '#app',
-			data: {
-				imgTitulo: '',
-				imgSrc: '',
-				dataExibicao: '',
-				dataFormatada: ''
+<script>
+	var urlAPI = 'https://api.nasa.gov/planetary/apod?api_key=' + chaveApi + '&date=';
+
+
+	var app = new Vue({
+		el: '#app',
+		data: {
+			imgTitulo: '',
+			imgSrc: '',
+			dataExibicao: '',
+			dataFormatada: '',
+			ehImg: ''
+		},
+		methods: {
+			carregaImg: function(){
+				axios.get(urlAPI+this.dataFormatada)
+				.then(function(resposta){
+
+					app.ehImg = resposta.data.url.indexOf("youtube") > 0 ? false : true;
+
+					app.imgSrc = resposta.data.url;
+					app.imgTitle = resposta.data.title;
+				});
 			},
-			methods: {
-				carregaImg: function(){
-					axios.get(urlAPI+this.dataFormatada)
-					.then(function(resposta){
-						app.imgSrc = resposta.data.url;
-						app.imgTitle = resposta.data.title;
-					});
-				},
 
-				buscaImgPorData: function(e){
-					e.preventDefault();
-					this.dataFormatada = this.formatarDataNasa(this.dataExibicao);
+			buscaImgPorData: function(e){
+				e.preventDefault();
+				this.dataFormatada = this.formatarDataNasa(this.dataExibicao);
 
-					axios.get(urlAPI+this.dataFormatada)
-					.then(function(resposta){
-						app.imgSrc = resposta.data.url;
-						app.imgTitle = resposta.data.title;
-					});
-				},
+				axios.get(urlAPI+this.dataFormatada)
+				.then(function(resposta){
+					app.ehImg = resposta.data.url.indexOf("youtube") > 0 ? false : true;
 
-				hoje: function(){
-					var today = new Date();
-					var dd = String(today.getDate()).padStart(2, '0');
+					app.imgSrc = resposta.data.url;
+					app.imgTitle = resposta.data.title;
+				});
+			},
+
+			hoje: function(){
+				var today = new Date();
+				var dd = String(today.getDate()).padStart(2, '0');
 					var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
 					var yyyy = today.getFullYear();
 
