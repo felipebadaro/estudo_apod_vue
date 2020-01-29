@@ -8,12 +8,17 @@
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
+	<link rel="stylesheet" type="text/css" href="loader.css">
+
 	<title>APOD</title>
 
 	<style></style>
 </head>
 <body>
+
 	<div id="app">	
+	<div class="loading" v-if="loading">Loading&#8230;</div>
+	
 		<div class="container py-2">
 			<h2>Busca de imagem/vídeo do dia no APOD</h2>
 			<form action="">
@@ -56,40 +61,57 @@
 			imgSrc: '',
 			dataExibicao: '',
 			dataFormatada: '',
-			ehImg: ''
+			ehImg: '',
+			loading: false
 		},
 		methods: {
 			carregaImg: function(){
+
+				this.loading = true;
+
+
 				axios.get(urlAPI+this.dataFormatada)
 				.then(function(resposta){
 
+					app.loading = false;
 					app.ehImg = resposta.data.url.indexOf("youtube") > 0 ? false : true;
-
 					app.imgSrc = resposta.data.url;
 					app.imgTitle = resposta.data.title;
+
 				})
 				.catch(function(){
-					alert('Ocorreu um erro ao realizar a busca, tente novamente.');
+
+					app.loading = false;
+					console.error('Ocorreu um erro ao realizar a busca, tente novamente.');
+
 				});
 			},
 
 			buscaImgPorData: function(e){
+
+				this.loading = true;
+
 				e.preventDefault();
 				this.dataFormatada = this.formatarDataNasa(this.dataExibicao);
 
 				axios.get(urlAPI+this.dataFormatada)
 				.then(function(resposta){
+					this.loading = false;
 					app.ehImg = resposta.data.url.indexOf("youtube") > 0 ? false : true;
 
 					app.imgSrc = resposta.data.url;
 					app.imgTitle = resposta.data.title;
 				})
 				.catch(function(){
-					alert('Ocorreu um erro ao realizar a busca, tente novamente.');
+
+					this.loading = false;
+					console.error('Ocorreu um erro ao realizar a busca, tente novamente.');
+
 				});
 			},
 
 			hoje: function(){
+
 				var today = new Date();
 				var dd = String(today.getDate()).padStart(2, '0');
 					var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
@@ -97,6 +119,7 @@
 
 					this.dataExibicao = dd + '/' + mm + '/' + yyyy;
 					this.dataFormatada = yyyy + '-' + mm + '-' + dd;
+
 				},
 
 				formatarDataNasa: function(data){
